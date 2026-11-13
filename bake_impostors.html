@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Xuất tranh hậu cảnh minh họa</title>
+<style>body{font:15px system-ui;background:#18242b;color:#e0d9c8;padding:24px}button{padding:10px 16px}canvas{width:320px;max-width:45vw;background:#ddd;border:1px solid #777}section{margin:18px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}</style></head>
+<body><h1>Tranh hậu cảnh minh họa</h1><p>Mỗi cặp gồm ảnh màu và chiều sâu được vẽ từ cùng mô tả tham số. Các khối và số gian là minh họa, chưa xác nhận nguyên trạng di tích.</p><button id="export">Xuất WebP màu và PNG chiều sâu</button><div id="cards"></div>
+<script type="module">
+import {backdropLayout} from './bg/building_layout.js';
+import {paintImpostor} from './bg/impostor_art.js';
+const cards=[];
+for(const [index,item] of backdropLayout.items.filter(item=>item.scene_position.z < -70).slice(0,8).entries()){
+  const color=document.createElement('canvas'),depth=document.createElement('canvas');
+  color.width=depth.width=512;color.height=depth.height=256;
+  paintImpostor(color,depth,{width:item.width,height:item.height});
+  const section=document.createElement('section');section.append(color,depth);document.getElementById('cards').append(section);
+  cards.push({index,color,depth});
+}
+document.getElementById('export').onclick=async()=>{
+  const sizes=[];
+  for(const card of cards)for(const [kind,type] of [['color','image/webp'],['depth','image/png']]){
+    const blob=await new Promise(resolve=>card[kind].toBlob(resolve,type,0.88));
+    sizes.push({card:card.index,kind,bytes:blob.size});
+    const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`hau_canh_${card.index}_${kind}.${kind==='color'?'webp':'png'}`;link.click();URL.revokeObjectURL(link.href);
+  }
+  const report=new Blob([JSON.stringify({files:sizes,total_bytes:sizes.reduce((sum,item)=>sum+item.bytes,0)},null,2)],{type:'application/json'});
+  const link=document.createElement('a');link.href=URL.createObjectURL(report);link.download='hau_canh_dung_luong.json';link.click();URL.revokeObjectURL(link.href);
+};
+</script></body></html>
