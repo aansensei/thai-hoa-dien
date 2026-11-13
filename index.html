@@ -794,7 +794,8 @@
       currentTimeMode = mode;
       const container = document.getElementById('parallax-container');
       if (container) {
-        container.className = 'theme-' + mode;
+        container.classList.remove('theme-day', 'theme-sunset', 'theme-night');
+        container.classList.add('theme-' + mode);
       }
       document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
       const activeBtn = document.getElementById('btn-' + mode);
@@ -845,6 +846,9 @@
       renderer.outputEncoding = THREE.sRGBEncoding;
       painterlyPass = createPainterlyPass(renderer);
       container.appendChild(renderer.domElement);
+      const gl = renderer.getContext();
+      const rendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      renderer.domElement.dataset.gpu = rendererInfo ? gl.getParameter(rendererInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -1001,6 +1005,9 @@
       if (triEl && info.render) triEl.innerText = info.render.triangles.toLocaleString();
       const callEl = document.getElementById('stat-calls');
       if (callEl && info.render) callEl.innerText = info.render.calls;
+      renderer.domElement.dataset.triangles = info.render.triangles;
+      renderer.domElement.dataset.drawCalls = info.render.calls;
+      renderer.domElement.dataset.contextLost = renderer.getContext().isContextLost();
     }
 
     function animate() {
@@ -1014,6 +1021,7 @@
         if (fpsEl) fpsEl.innerText = frameCount;
         frameCount = 0;
         lastTime = now;
+        calculateSceneStats();
       }
 
       if (isTouring) {
