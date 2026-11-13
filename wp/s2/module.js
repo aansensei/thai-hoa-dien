@@ -10,7 +10,7 @@ export function register(ctx) {
   scene.fog = null;
 
   // Anh sang moi truong (Ambient light) am ap, ro tung thớ go va da
-  const ambLight = new THREE.AmbientLight(0xfff5eb, 0.75);
+  const ambLight = new THREE.AmbientLight(0xfff5eb, 0.42);
   group.add(ambLight);
 
   // Hemisphere light mo phong anh sang bau troi va phan xa mat dat
@@ -18,7 +18,7 @@ export function register(ctx) {
   group.add(hemiLight);
 
   // Anh sang mat troi chieu xiên tu huong Tay Nam (Directional Light)
-  const sunLight = new THREE.DirectionalLight(0xfff3e0, 2.2);
+  const sunLight = new THREE.DirectionalLight(0xfff3e0, 1.65);
   sunLight.position.set(28, 25, 38);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 2048;

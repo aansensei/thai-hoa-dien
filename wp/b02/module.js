@@ -1,6 +1,7 @@
 import { thaiHoaPlan as plan } from './plan_spec.js';
 import { planToScene } from './coordinates.js';
 import { createThaiHoaRoofs } from './roof.js';
+import { createFantasyDetails } from './fantasy.js';
 
 export function register(ctx) {
   const scene = ctx.scene;
@@ -21,6 +22,8 @@ export function register(ctx) {
     stoneNor: loader.load('textures_stylized/stone_thanh_slate_nor.png'),
     stoneRough: loader.load('textures_stylized/stone_thanh_slate_rough.png'),
   };
+
+  for (const texture of [textures.tileYellowDiff, textures.colDragonDiff, textures.mosaicDiff, textures.stoneDiff]) texture.encoding = THREE.sRGBEncoding;
 
   for (const texture of [textures.tileYellowDiff, textures.tileYellowNor, textures.tileYellowRough]) {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -325,6 +328,8 @@ export function register(ctx) {
     tile: tileMat, wood: woodLimMat,
     ridge: new THREE.MeshStandardMaterial({ color: 0xE5A93B, roughness: 0.42 })
   });
+
+  if (ctx.fantasy) createFantasyDetails(group);
 
   scene.add(group);
 

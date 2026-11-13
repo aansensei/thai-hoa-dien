@@ -13,12 +13,18 @@ export function register(ctx) {
   const brickDiff = loader.load('textures_stylized/brick_bat_trang_diff.png');
   const brickNor = loader.load('textures_stylized/brick_bat_trang_nor.png');
 
+  stoneDiff.encoding = brickDiff.encoding = THREE.sRGBEncoding;
+  for (const texture of [stoneDiff, stoneNor, stoneRough, brickDiff, brickNor]) {
+    texture.anisotropy = 8;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+  }
+
   stoneDiff.wrapS = stoneDiff.wrapT = THREE.RepeatWrapping;
   stoneNor.wrapS = stoneNor.wrapT = THREE.RepeatWrapping;
   stoneRough.wrapS = stoneRough.wrapT = THREE.RepeatWrapping;
-  stoneDiff.repeat.set(28, 28);
-  stoneNor.repeat.set(28, 28);
-  stoneRough.repeat.set(28, 28);
+  stoneDiff.repeat.set(9, 18);
+  stoneNor.repeat.set(9, 18);
+  stoneRough.repeat.set(9, 18);
 
   // 1. MAT SAN DAI TRIEU NGHI LAT DA THANH CO MACH VOI (Z = 15.0m den 75.0m, rong 62.0m)
   const courtGeom = new THREE.BoxGeometry(62.0, 0.4, 60.0);
@@ -31,6 +37,27 @@ export function register(ctx) {
     metalness: 0.05
   });
   const courtMesh = new THREE.Mesh(courtGeom, courtMat);
+  courtMat.map = null;
+  courtMat.normalMap = null;
+  courtMat.roughnessMap = null;
+  courtMat.color.setHex(0x8b968f);
+  courtMat.roughness = 0.94;
+  courtMat.extensions = {derivatives: true};
+  courtMat.onBeforeCompile = shader => {
+    shader.vertexShader = 'varying vec3 courtWorld;\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\ncourtWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    shader.fragmentShader = 'varying vec3 courtWorld;\n' + shader.fragmentShader;
+    shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `
+      vec2 tilePoint = courtWorld.xz / vec2(1.25, 1.8);
+      tilePoint.x += mod(floor(tilePoint.y), 2.0) * 0.5;
+      vec2 tileId = floor(tilePoint);
+      vec2 edge = min(fract(tilePoint), 1.0 - fract(tilePoint));
+      vec2 antialias = fwidth(tilePoint);
+      vec2 seam = smoothstep(vec2(0.009), vec2(0.009) + antialias, edge);
+      float tileNoise = fract(sin(dot(tileId, vec2(12.9898, 78.233))) * 43758.5453);
+      diffuseColor.rgb *= mix(0.74, 0.95 + tileNoise * 0.12, seam.x * seam.y);
+    `);
+  };
   courtMesh.position.set(0, -0.2, 45.0);
   courtMesh.receiveShadow = true;
   group.add(courtMesh);

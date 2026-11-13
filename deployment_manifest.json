@@ -1,20 +1,36 @@
 {
   "files": {
+    "lib/vendor/LICENSE.three.txt": {
+      "bytes": 1081,
+      "sha256": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f"
+    },
     "pilot_thai_hoa.html": {
-      "bytes": 45613,
-      "sha256": "8baeba2ecb60cef0b03d235901326402daac79b5a10b11635c45fdc4fd7f9c99"
+      "bytes": 47940,
+      "sha256": "3210674728995a00c13ef4a3a83391fcecf4f522d4f5a1f6a0ad6950b182353e"
+    },
+    "lib/painterly_pass.js": {
+      "bytes": 2380,
+      "sha256": "aa4e1c1c2baf33404c3fe3fd323600b15e1cc6427bafc3d5454477da8f26ed64"
+    },
+    "bg/depth_backdrop.js": {
+      "bytes": 5516,
+      "sha256": "a0c35478711f18d687b5e72f6302d91c71e9a5e6696bf97f551d53c4b8f9310d"
+    },
+    "bg/building_layout.js": {
+      "bytes": 8219,
+      "sha256": "6adba1053d6bdecf1950d7725cd4233cc3848ea809cbdf6e25a7ed6dba16e2d0"
     },
     "wp/s2/module.js": {
-      "bytes": 1438,
-      "sha256": "498824ae33ce20d52b16f7bc8f90dc46570ecb13830b50e2b624bd160fbf07a5"
+      "bytes": 1439,
+      "sha256": "68096b636851566fb74b704d855a0fae6d964e2aa2af7aabb77730316af43e33"
     },
     "wp/s1/module.js": {
       "bytes": 450,
       "sha256": "caab29d515f345b05b135544711f232ad71364f9b43670fe4628ed9ebb33f7f8"
     },
     "wp/g1/module.js": {
-      "bytes": 7425,
-      "sha256": "64f88ecd3140bca72514db28d8ef27077e3b9388c483433dc1e319e6c0b4d347"
+      "bytes": 8847,
+      "sha256": "d98c1e1332a641d816f8900e8cf3f161f39c3362ab7e9b2864f71656fc6a2216"
     },
     "textures_stylized/stone_thanh_slate_diff.png": {
       "bytes": 1031802,
@@ -37,8 +53,8 @@
       "sha256": "68e0d46d2d1d8e16d1049db35756626228079f00803dd9ff904a8efc4591bc36"
     },
     "wp/b02/module.js": {
-      "bytes": 12677,
-      "sha256": "ed5d92a4a42550bc9b01bdfa6e6b717be11308c3bfc4cd29f156a81b4619b7fb"
+      "bytes": 12940,
+      "sha256": "a20001604c3d56c4b844c22ef95f90c00ae1ca08dbf20528da44241eec43ec82"
     },
     "textures_stylized/mosaic_kham_sanh_su_nor.png": {
       "bytes": 1141020,
@@ -71,6 +87,10 @@
     "textures_stylized/tile_hoang_luu_ly_diff.png": {
       "bytes": 909781,
       "sha256": "90ef6c39125b76bac732d79f720b6adbd4cdf892afb1bbcc8f47ece972cf5904"
+    },
+    "wp/b02/fantasy.js": {
+      "bytes": 10370,
+      "sha256": "b5d775dcd81ebbe81bdf1164c7723b338b7f47a4f2017928a0bdc50bb3ed17d5"
     },
     "wp/b02/roof.js": {
       "bytes": 10531,
