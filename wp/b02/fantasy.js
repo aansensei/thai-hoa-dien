@@ -128,12 +128,8 @@ export function createFantasyDetails(building) {
     const middle = (left + right) / 2;
     box(group, 'wood', [middle, 5.05, 13.5], [width + 0.24, 0.24, 0.38]);
     box(group, 'gold', [middle, 5.19, 13.7], [width + 0.28, 0.035, 0.06]);
-    box(group, 'jade', [middle, 5.44, 13.49], [width, 0.36, 0.16]);
+    box(group, 'wood', [middle, 5.44, 13.49], [width, 0.36, 0.16]);
     for (const edge of [left, right]) box(group, 'wood', [edge, 3.04, 13.5], [0.15, 4.12, 0.32]);
-    for (let panel = 0; panel < 5; panel++) {
-      const x = left + (panel + 0.5) * width / 5;
-      box(group, 'gold', [x, 5.44, 13.61], [0.19, 0.19, 0.035], [0, 0, Math.PI / 4]);
-    }
     const leafWidth = width / 4;
     for (let leafIndex = 0; leafIndex < 4; leafIndex++) {
       const leaf = new THREE.Group();
