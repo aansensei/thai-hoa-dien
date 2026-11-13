@@ -1,0 +1,97 @@
+{
+  "files": {
+    "pilot_thai_hoa.html": {
+      "bytes": 45613,
+      "sha256": "8baeba2ecb60cef0b03d235901326402daac79b5a10b11635c45fdc4fd7f9c99"
+    },
+    "wp/s2/module.js": {
+      "bytes": 1438,
+      "sha256": "498824ae33ce20d52b16f7bc8f90dc46570ecb13830b50e2b624bd160fbf07a5"
+    },
+    "wp/s1/module.js": {
+      "bytes": 450,
+      "sha256": "caab29d515f345b05b135544711f232ad71364f9b43670fe4628ed9ebb33f7f8"
+    },
+    "wp/g1/module.js": {
+      "bytes": 7425,
+      "sha256": "64f88ecd3140bca72514db28d8ef27077e3b9388c483433dc1e319e6c0b4d347"
+    },
+    "textures_stylized/stone_thanh_slate_diff.png": {
+      "bytes": 1031802,
+      "sha256": "ec87dd77b89ae7db2c1962e1ffe06e46a49f861b3693ddc262abda9dc4840c51"
+    },
+    "textures_stylized/brick_bat_trang_nor.png": {
+      "bytes": 9794,
+      "sha256": "58717b04d975aa29b9cd72ad3bcef077366a98ef9e2e639baeec10570fd61558"
+    },
+    "textures_stylized/brick_bat_trang_diff.png": {
+      "bytes": 919667,
+      "sha256": "c78d0dda32c1f858de8e49a5a7f090b6b33b689db78748e37914c39bc41de2fe"
+    },
+    "textures_stylized/stone_thanh_slate_rough.png": {
+      "bytes": 743897,
+      "sha256": "0bc16cdf38df6cac784145d3eda8ae6b369984ff2b024ebc8a956b798befb5c7"
+    },
+    "textures_stylized/stone_thanh_slate_nor.png": {
+      "bytes": 2401388,
+      "sha256": "68e0d46d2d1d8e16d1049db35756626228079f00803dd9ff904a8efc4591bc36"
+    },
+    "wp/b02/module.js": {
+      "bytes": 12677,
+      "sha256": "ed5d92a4a42550bc9b01bdfa6e6b717be11308c3bfc4cd29f156a81b4619b7fb"
+    },
+    "textures_stylized/mosaic_kham_sanh_su_nor.png": {
+      "bytes": 1141020,
+      "sha256": "e7922db6b04dfc75731d910ea776d30af65eb7bba3343e9c710c2788656203cd"
+    },
+    "textures_stylized/mosaic_kham_sanh_su_diff.png": {
+      "bytes": 1156497,
+      "sha256": "57cab0d05135bcbefb77718327f9da5ef67abab3593721e7d4ff80a3071b8669"
+    },
+    "textures_stylized/column_son_son_dragon_rough.png": {
+      "bytes": 167220,
+      "sha256": "500e93bf55fd53071f91dfcf1433c4046d4c60ad73e85113b4c6aad08ed82931"
+    },
+    "textures_stylized/column_son_son_dragon_nor.png": {
+      "bytes": 797245,
+      "sha256": "f793c6ec0d7906161d01a11ce42bcdb16e422a91c68e5684a6d83eb8683e2e4b"
+    },
+    "textures_stylized/column_son_son_dragon_diff.png": {
+      "bytes": 812773,
+      "sha256": "ad53e4076818e5e8232ccb31325b9b870a7dbd7d0790f0e3662bda90521d8c25"
+    },
+    "textures_stylized/tile_hoang_luu_ly_rough.png": {
+      "bytes": 541028,
+      "sha256": "66008fdf6fc98d246874d1cda7a895c64d854d60f7a29e3e36d52fd44d55d172"
+    },
+    "textures_stylized/tile_hoang_luu_ly_nor.png": {
+      "bytes": 6331,
+      "sha256": "c21d7db0e6b711daa08508284d74ca86ce4f905822eea044a4c0008071986387"
+    },
+    "textures_stylized/tile_hoang_luu_ly_diff.png": {
+      "bytes": 909781,
+      "sha256": "90ef6c39125b76bac732d79f720b6adbd4cdf892afb1bbcc8f47ece972cf5904"
+    },
+    "wp/b02/roof.js": {
+      "bytes": 10531,
+      "sha256": "bde1160ede9c9f2346e88bcc9319166ff20f421ff3074ab3c6b51a7804b4f41b"
+    },
+    "wp/b02/coordinates.js": {
+      "bytes": 422,
+      "sha256": "c7a9eeba3221d699b4581f6d73f41ff32db293d485c4a4966dca4717a2284c17"
+    },
+    "wp/b02/plan_spec.js": {
+      "bytes": 33893,
+      "sha256": "17454bf9cc27a1b05f48b7c8236c35670b85f1cb0aec9ca248edc4c20c9872a9"
+    },
+    "lib/vendor/OrbitControls.js": {
+      "bytes": 26375,
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    "lib/vendor/three.min.js": {
+      "bytes": 603445,
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    }
+  },
+  "browser_verified": false
+}

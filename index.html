@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinh Thành Huế 3D | Điện Thái Hòa (Phiên Bản 21: SVG Thị Sai)</title>
+  <style>
+    /* Giao dien chinh phien ban 21: Dien Thai Hoa 3D va Hau Canh SVG Thi Sai */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #060913;
+      color: #e0e4ec;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Khung chua 8 lop SVG Hau Canh Thi Sai phia sau canvas 3D */
+    #parallax-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+      background: #060913;
+    }
+
+    .parallax-layer {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 250vw;
+      height: 250vh;
+      margin-left: -125vw;
+      margin-top: -125vh;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+      transform: translate3d(0px, 0px, 0px);
+    }
+    .parallax-layer svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Che do Ngay (Day mode) */
+    #parallax-container.theme-day {
+      --sky-top: #3a88e9;
+      --sky-mid: #7ec2f5;
+      --sky-horizon: #e8f4fc;
+      --sky-ground: #f5f9fc;
+      --sun-opacity: 0.88;
+      --night-stars-opacity: 0;
+      --cloud-color: #ffffff;
+      --cloud-opacity: 0.88;
+      --mtn-top: #526f84;
+      --mtn-bottom: #8ca3b5;
+      --mtn-opacity: 0.95;
+      --forest-color: #2b5438;
+      --wall-color: #7b2925;
+      --roof-color: #d69e16;
+      --near-wood: #3e2618;
+      --near-leaf: #2e6b36;
+      --mist-color: #ffffff;
+      --mist-opacity: 0.32;
+      --godray-opacity: 0.35;
+      --lantern-body: #d9534f;
+      --lantern-core: #ffeb3b;
+      --lantern-glow-opacity: 0;
+    }
+
+    /* Che do Hoang Hon (Sunset mode) */
+    #parallax-container.theme-sunset {
+      --sky-top: #2a1538;
+      --sky-mid: #8b2653;
+      --sky-horizon: #f39c12;
+      --sky-ground: #e67e22;
+      --sun-opacity: 0.95;
+      --night-stars-opacity: 0.05;
+      --cloud-color: #ffbb77;
+      --cloud-opacity: 0.92;
+      --mtn-top: #43284c;
+      --mtn-bottom: #733c5e;
+      --mtn-opacity: 0.95;
+      --forest-color: #3b3524;
+      --wall-color: #632020;
+      --roof-color: #c97d10;
+      --near-wood: #2c1a12;
+      --near-leaf: #38421d;
+      --mist-color: #ff9955;
+      --mist-opacity: 0.38;
+      --godray-opacity: 0.55;
+      --lantern-body: #e64a19;
+      --lantern-core: #ffe082;
+      --lantern-glow-opacity: 0.45;
+    }
+
+    /* Che do Dem (Night mode) */
+    #parallax-container.theme-night {
+      --sky-top: #050811;
+      --sky-mid: #0d1627;
+      --sky-horizon: #19253d;
+      --sky-ground: #10192a;
+      --sun-opacity: 0;
+      --night-stars-opacity: 0.95;
+      --cloud-color: #26354f;
+      --cloud-opacity: 0.65;
+      --mtn-top: #101827;
+      --mtn-bottom: #1d2b42;
+      --mtn-opacity: 0.95;
+      --forest-color: #0e1e19;
+      --wall-color: #361717;
+      --roof-color: #57431c;
+      --near-wood: #140d0a;
+      --near-leaf: #0f2419;
+      --mist-color: #1a2a44;
+      --mist-opacity: 0.42;
+      --godray-opacity: 0;
+      --lantern-body: #ff3d00;
+      --lantern-core: #fff59d;
+      --lantern-glow-opacity: 1.0;
+    }
+
+    /* Hieu ung lap lanh den long ban dem */
+    @keyframes lanternGlowPulse {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 167, 38, 0.7)); }
+      50% { filter: drop-shadow(0 0 22px rgba(255, 87, 34, 0.95)); }
+    }
+    #parallax-container.theme-night #layer-bg_08_lanterns .lantern-item {
+      animation: lanternGlowPulse 3s infinite ease-in-out;
+    }
+
+    /* Canvas WebGL trong suot nam phia tren cac lop SVG */
+    #canvas-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+
+    /* Bang dieu khien UI */
+    .panel {
+      position: absolute;
+      background: rgba(16, 22, 34, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px 16px;
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    #top-bar {
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: opacity 0.3s;
+    }
+
+    #cam-bar {
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 94vw;
+      transition: opacity 0.3s;
+    }
+
+    h1 { font-size: 14px; color: #f0c84a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .tag { font-size: 11px; background: rgba(240, 200, 74, 0.16); color: #f0c84a; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(240, 200, 74, 0.3); }
+
+    button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #d0d6e2;
+      padding: 6px 11px;
+      border-radius: 5px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover { background: rgba(240, 200, 74, 0.25); border-color: #f0c84a; color: #fff; }
+    button.active { background: #f0c84a; color: #12161f; font-weight: bold; border-color: #f0c84a; }
+
+    .time-btn.active { background: #e67e22; color: #fff; border-color: #f39c12; font-weight: bold; }
+
+    #stats-box {
+      font-size: 11px;
+      color: #9aa5b8;
+      display: flex;
+      gap: 14px;
+    }
+    #stats-box span { color: #f0c84a; font-family: monospace; }
+
+    #time-bar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    #time-bar button {
+      padding: 5px 10px;
+      font-size: 11px;
+    }
+  </style>
+  <script src="lib/vendor/three.min.js"></script>
+  <script src="lib/vendor/OrbitControls.js"></script>
+</head>
+<body>
+
+  <!-- 1. HAU CANH SVG 2D THI SAI (PARALLAX LAYERS) -->
+  <div id="parallax-container" class="theme-day">
+    <div class="parallax-layer layer-sky" id="layer-bg_01_sky" data-layer="bg_01_sky" data-alias="layer-sky" data-yaw="0.02" data-pitch="0.08" style="z-index: 1;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--sky-top, #3a88e9)" />
+    <stop offset="45%" stop-color="var(--sky-mid, #7ec2f5)" />
+    <stop offset="75%" stop-color="var(--sky-horizon, #e8f4fc)" />
+    <stop offset="100%" stop-color="var(--sky-ground, #f5f9fc)" />
+  </linearGradient>
+  <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#fffdf0" stop-opacity="1" />
+    <stop offset="30%" stop-color="#ffeaa7" stop-opacity="0.8" />
+    <stop offset="70%" stop-color="#fdcb6e" stop-opacity="0.3" />
+    <stop offset="100%" stop-color="#ffeaa7" stop-opacity="0" />
+  </radialGradient>
+  <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+    <stop offset="40%" stop-color="#e0e8ff" stop-opacity="0.4" />
+    <stop offset="100%" stop-color="#a0b8ff" stop-opacity="0" />
+  </radialGradient>
+</defs>
+<rect width="3200" height="1400" fill="url(#skyGrad)" />
+
+<!-- Mat troi buoi ngay va hoang hon -->
+<g class="celestial-sun" style="opacity: var(--sun-opacity, 0.85); transition: opacity 0.8s ease;">
+  <circle cx="2100" cy="380" r="140" fill="url(#sunGrad)" />
+  <circle cx="2100" cy="380" r="42" fill="#fffdf0" />
+</g>
+
+<!-- Mat trang va ngan ha sao dem -->
+<g class="celestial-night" style="opacity: var(--night-stars-opacity, 0); transition: opacity 0.8s ease;">
+  <!-- Vang trang luoi liem cung dinh -->
+  <circle cx="1100" cy="260" r="90" fill="url(#moonGlow)" />
+  <circle cx="1100" cy="260" r="32" fill="#fffef2" />
+  <circle cx="1112" cy="252" r="28" fill="var(--sky-top, #050811)" />
+  <!-- Cac vi tinh tu lap lanh -->
+  <g fill="#ffffff">
+    <circle cx="350" cy="120" r="2.2" opacity="0.8" />
+    <circle cx="520" cy="180" r="1.8" opacity="0.6" />
+    <circle cx="680" cy="90" r="2.5" opacity="0.9" />
+    <circle cx="840" cy="210" r="1.5" opacity="0.5" />
+    <circle cx="1320" cy="140" r="2.4" opacity="0.8" />
+    <circle cx="1480" cy="80" r="2.8" opacity="0.9" />
+    <circle cx="1640" cy="190" r="1.6" opacity="0.7" />
+    <circle cx="1820" cy="110" r="2.2" opacity="0.8" />
+    <circle cx="1980" cy="240" r="1.4" opacity="0.5" />
+    <circle cx="2250" cy="90" r="2.6" opacity="0.9" />
+    <circle cx="2420" cy="170" r="2.0" opacity="0.7" />
+    <circle cx="2600" cy="130" r="2.3" opacity="0.8" />
+    <circle cx="2780" cy="220" r="1.7" opacity="0.6" />
+    <circle cx="2950" cy="100" r="2.4" opacity="0.8" />
+    <circle cx="420" cy="280" r="1.5" opacity="0.5" />
+    <circle cx="1550" cy="250" r="1.8" opacity="0.6" />
+    <circle cx="2350" cy="290" r="1.6" opacity="0.5" />
+  </g>
+</g>
+</svg>
+    </div>
+    <div class="parallax-layer layer-clouds" id="layer-bg_02_clouds" data-layer="bg_02_clouds" data-alias="layer-clouds" data-yaw="0.06" data-pitch="0.18" style="z-index: 2;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="cloudGradMain" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--cloud-color, #ffffff)" stop-opacity="0.92" />
+    <stop offset="100%" stop-color="var(--cloud-color, #ffffff)" stop-opacity="0.25" />
+  </linearGradient>
+  <linearGradient id="cloudGradSub" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--cloud-color, #ffffff)" stop-opacity="0.7" />
+    <stop offset="100%" stop-color="var(--cloud-color, #ffffff)" stop-opacity="0.15" />
+  </linearGradient>
+</defs>
+<g class="cloud-group" style="opacity: var(--cloud-opacity, 0.88); transition: opacity 0.8s ease;">
+  <!-- Cum may tang cao ben trai -->
+  <path d="M 80 320 
+           Q 180 240 320 270 
+           Q 440 200 600 230 
+           Q 740 180 900 240 
+           Q 1040 210 1180 270 
+           Q 1280 340 1200 410 
+           Q 1050 440 920 420 
+           Q 760 450 620 430 
+           Q 460 450 320 420 
+           Q 180 440 80 380 Z" fill="url(#cloudGradMain)" />
+
+  <!-- Cum may tang giua phia tren nui Ngu Binh -->
+  <path d="M 1250 240 
+           Q 1380 170 1560 200 
+           Q 1720 150 1900 190 
+           Q 2060 160 2200 220 
+           Q 2320 280 2240 350 
+           Q 2100 380 1960 360 
+           Q 1800 390 1660 370 
+           Q 1500 390 1380 360 
+           Q 1260 370 1250 300 Z" fill="url(#cloudGradMain)" />
+
+  <!-- Cum may tang cao ben phai -->
+  <path d="M 2300 290 
+           Q 2440 220 2600 250 
+           Q 2740 190 2900 230 
+           Q 3040 210 3160 280 
+           L 3200 380 
+           Q 3080 430 2940 410 
+           Q 2780 440 2640 420 
+           Q 2480 440 2360 400 
+           Q 2260 390 2300 290 Z" fill="url(#cloudGradMain)" />
+
+  <!-- Dai may luon thap mong manh -->
+  <path d="M 380 450 
+           Q 520 400 680 420 
+           Q 840 380 1020 410 
+           Q 1180 440 1140 480 
+           Q 980 500 840 490 
+           Q 680 510 520 490 
+           Q 400 500 380 450 Z" fill="url(#cloudGradSub)" />
+
+  <path d="M 1750 410 
+           Q 1900 360 2080 380 
+           Q 2240 350 2400 380 
+           Q 2520 420 2480 460 
+           Q 2340 480 2200 470 
+           Q 2040 490 1900 470 
+           Q 1780 480 1750 410 Z" fill="url(#cloudGradSub)" />
+</g>
+</svg>
+    </div>
+    <div class="parallax-layer layer-mountains" id="layer-bg_03_mountains" data-layer="bg_03_mountains" data-alias="layer-mountains" data-yaw="0.14" data-pitch="1.0" style="z-index: 3;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="mtnFarGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--mtn-top, #526f84)" stop-opacity="0.7" />
+    <stop offset="100%" stop-color="var(--mtn-bottom, #8ca3b5)" stop-opacity="0.3" />
+  </linearGradient>
+  <linearGradient id="mtnNguBinhGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--mtn-top, #415b6d)" stop-opacity="0.95" />
+    <stop offset="65%" stop-color="var(--mtn-bottom, #668297)" stop-opacity="0.85" />
+    <stop offset="100%" stop-color="var(--mtn-bottom, #8ca3b5)" stop-opacity="0.6" />
+  </linearGradient>
+</defs>
+<g style="opacity: var(--mtn-opacity, 0.95); transition: all 0.8s ease;">
+  <!-- Day nui xa ngoai cung (day Kim Phung va Truong Son xa mo) -->
+  <path d="M 0 610 
+           Q 240 540 480 570 
+           Q 700 490 960 530 
+           Q 1180 460 1380 490 
+           Q 1600 440 1850 480 
+           Q 2100 430 2380 500 
+           Q 2620 460 2880 520 
+           Q 3050 490 3200 540 
+           L 3200 1400 L 0 1400 Z" fill="url(#mtnFarGrad)" />
+
+  <!-- Nui Ngu Binh (Bang Son) chinh giua: Dinh bang phang hinh thang can dac trung kien truc phong thuy Hue -->
+  <!-- Flanked by Ta Bat Son and Huu Bat Son -->
+  <path d="M 0 650 
+           Q 320 620 620 640 
+           Q 900 610 1150 630 
+           <!-- Huu Bat Son (ngon doi phu ben tay phai huong nhin ra, tuc ben tay trai ban do) -->
+           Q 1280 585 1380 565 
+           <!-- Suon doc len nui Ngu Binh -->
+           Q 1460 540 1520 470 
+           <!-- Dinh Nui Ngu Binh (Bang Son: dinh bang phang doc dao dai khoang 160px) -->
+           L 1680 470 
+           <!-- Suon doc xuong phia dong -->
+           Q 1740 540 1820 565 
+           <!-- Ta Bat Son (ngon doi phu ben tay phai huong nhin) -->
+           Q 1920 585 2050 630 
+           Q 2350 610 2650 645 
+           Q 2950 625 3200 660 
+           L 3200 1400 L 0 1400 Z" fill="url(#mtnNguBinhGrad)" />
+</g>
+</svg>
+    </div>
+    <div class="parallax-layer layer-forest" id="layer-bg_04_forest" data-layer="bg_04_forest" data-alias="layer-forest" data-yaw="0.22" data-pitch="0.95" style="z-index: 4;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="forestGradFar" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--forest-color, #2b5438)" stop-opacity="0.95" />
+    <stop offset="100%" stop-color="var(--forest-color, #183321)" stop-opacity="0.8" />
+  </linearGradient>
+</defs>
+<!-- Rang thong tien trieu voi bup thong nhon nhon xen ke tan cay bo de, cay go kieu Hue -->
+<path d="M 0 665 
+         Q 35 645 70 660 Q 105 640 140 655 Q 175 635 210 650 Q 250 630 290 648 
+         Q 330 630 370 646 Q 410 625 455 645 Q 500 628 545 644 Q 590 624 635 642
+         Q 680 622 725 640 Q 770 620 815 638 Q 860 618 905 636 Q 950 618 1000 635
+         Q 1050 615 1100 634 Q 1150 615 1200 632 Q 1250 612 1300 630 Q 1350 610 1400 628
+         Q 1450 608 1500 626 Q 1550 605 1600 624 Q 1650 605 1700 625 Q 1750 608 1800 628
+         Q 1850 610 1900 630 Q 1950 612 2000 632 Q 2050 615 2100 635 Q 2150 618 2200 638
+         Q 2250 620 2300 640 Q 2350 622 2400 642 Q 2450 624 2500 644 Q 2550 626 2600 646
+         Q 2650 628 2700 648 Q 2750 630 2800 650 Q 2850 632 2900 652 Q 2950 635 3000 654
+         Q 3050 638 3100 658 Q 3150 640 3200 660 
+         L 3200 1400 L 0 1400 Z" fill="url(#forestGradFar)" style="transition: fill 0.8s ease;" />
+</svg>
+    </div>
+    <div class="parallax-layer layer-roofs" id="layer-bg_05_distant_roofs" data-layer="bg_05_distant_roofs" data-alias="layer-roofs" data-yaw="0.32" data-pitch="0.9" style="z-index: 5;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="wallDistantGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--wall-color, #7b2925)" stop-opacity="0.9" />
+    <stop offset="100%" stop-color="var(--wall-color, #4a1816)" stop-opacity="0.75" />
+  </linearGradient>
+  <linearGradient id="roofDistantGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--roof-color, #d69e16)" stop-opacity="0.95" />
+    <stop offset="100%" stop-color="var(--roof-color, #8a6409)" stop-opacity="0.8" />
+  </linearGradient>
+</defs>
+<g style="transition: all 0.8s ease;">
+  <!-- Tuong gach vo van bao ve phia xa doc chan troi -->
+  <rect x="0" y="680" width="3200" height="60" fill="url(#wallDistantGrad)" />
+
+  <!-- Lau vong canh ben trai (Cung Dien Tho xa) -->
+  <path d="M 280 680 L 310 635 L 430 635 L 460 680 Z" fill="url(#roofDistantGrad)" />
+  <path d="M 265 645 Q 310 632 430 632 Q 475 645 480 638 L 260 638 Z" fill="var(--roof-color, #d69e16)" />
+  <!-- Tang 2 nho phia tren -->
+  <path d="M 335 635 L 350 605 L 390 605 L 405 635 Z" fill="url(#roofDistantGrad)" />
+  <path d="M 328 610 Q 350 602 390 602 Q 412 610 415 606 L 325 606 Z" fill="var(--roof-color, #d69e16)" />
+
+  <!-- Vong lau trung canh ben trai -->
+  <path d="M 640 680 L 670 625 L 810 625 L 840 680 Z" fill="url(#roofDistantGrad)" />
+  <path d="M 625 635 Q 670 620 810 620 Q 855 635 860 628 L 620 628 Z" fill="var(--roof-color, #d69e16)" />
+
+  <!-- Cac mai nha co va cong phu xa xa ben phai -->
+  <path d="M 2360 680 L 2390 625 L 2530 625 L 2560 680 Z" fill="url(#roofDistantGrad)" />
+  <path d="M 2345 635 Q 2390 620 2530 620 Q 2575 635 2580 628 L 2340 628 Z" fill="var(--roof-color, #d69e16)" />
+
+  <!-- Lau canh xa ben phai (Thai Binh Lau) -->
+  <path d="M 2760 680 L 2785 640 L 2885 640 L 2910 680 Z" fill="url(#roofDistantGrad)" />
+  <path d="M 2748 648 Q 2785 638 2885 638 Q 2922 648 2926 642 L 2744 642 Z" fill="var(--roof-color, #d69e16)" />
+</g>
+</svg>
+    </div>
+    <div class="parallax-layer layer-trees" id="layer-bg_06_near_trees" data-layer="bg_06_near_trees" data-alias="layer-trees" data-yaw="0.52" data-pitch="0.75" style="z-index: 6;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="trunkGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--near-wood, #3e2618)" />
+    <stop offset="100%" stop-color="#120a06" />
+  </linearGradient>
+  <linearGradient id="leafGradNear" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--near-leaf, #2e6b36)" />
+    <stop offset="100%" stop-color="#123017" />
+  </linearGradient>
+  <linearGradient id="frangipaniPetal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ffffff" />
+    <stop offset="65%" stop-color="#fffae6" />
+    <stop offset="100%" stop-color="#fbc02d" />
+  </linearGradient>
+</defs>
+<g style="transition: all 0.8s ease;">
+  <!-- CANH CAY SU DAI CO THU BEN TRAI (Ta vu / San Dai Trieu) -->
+  <!-- Than chinh uon luon gan guoc -->
+  <path d="M -40 180 Q 220 140 320 260 Q 420 380 340 540 Q 280 680 -20 820" 
+        stroke="url(#trunkGrad)" stroke-width="56" fill="none" stroke-linecap="round" />
+  <!-- Cac nhanh phu chia nhanh -->
+  <path d="M 220 210 Q 360 130 520 180" stroke="url(#trunkGrad)" stroke-width="28" fill="none" stroke-linecap="round" />
+  <path d="M 330 310 Q 480 310 560 410" stroke="url(#trunkGrad)" stroke-width="22" fill="none" stroke-linecap="round" />
+  <path d="M 350 430 Q 480 470 540 580" stroke="url(#trunkGrad)" stroke-width="18" fill="none" stroke-linecap="round" />
+
+  <!-- Cac chum la su dai thon dai dac trung -->
+  <g fill="url(#leafGradNear)">
+    <ellipse cx="360" cy="150" rx="110" ry="65" transform="rotate(-15 360 150)" />
+    <ellipse cx="530" cy="180" rx="100" ry="58" transform="rotate(10 530 180)" />
+    <ellipse cx="440" cy="270" rx="125" ry="70" transform="rotate(5 440 270)" />
+    <ellipse cx="570" cy="400" rx="105" ry="62" transform="rotate(20 570 400)" />
+    <ellipse cx="530" cy="570" rx="95" ry="55" transform="rotate(-10 530 570)" />
+    <ellipse cx="260" cy="380" rx="90" ry="52" transform="rotate(-25 260 380)" />
+  </g>
+
+  <!-- Hoa su dai (Hoa Dai) trang tinh khiet nhuy vang thom ngat -->
+  <g>
+    <!-- Bong 1 -->
+    <circle cx="340" cy="130" r="16" fill="url(#frangipaniPetal)" />
+    <circle cx="340" cy="130" r="5" fill="#f57f17" />
+    <!-- Bong 2 -->
+    <circle cx="510" cy="165" r="18" fill="url(#frangipaniPetal)" />
+    <circle cx="510" cy="165" r="6" fill="#f57f17" />
+    <!-- Bong 3 -->
+    <circle cx="430" cy="255" r="17" fill="url(#frangipaniPetal)" />
+    <circle cx="430" cy="255" r="5" fill="#f57f17" />
+    <!-- Bong 4 -->
+    <circle cx="550" cy="385" r="16" fill="url(#frangipaniPetal)" />
+    <circle cx="550" cy="385" r="5" fill="#f57f17" />
+  </g>
+
+  <!-- CANH CAY TUNG CO THU BEN PHAI (Huu vu) -->
+  <path d="M 3240 160 Q 2960 130 2860 240 Q 2760 350 2840 510 Q 2910 670 3220 800" 
+        stroke="url(#trunkGrad)" stroke-width="52" fill="none" stroke-linecap="round" />
+  <!-- Nhanh phu -->
+  <path d="M 2970 190 Q 2820 120 2670 170" stroke="url(#trunkGrad)" stroke-width="26" fill="none" stroke-linecap="round" />
+  <path d="M 2860 290 Q 2710 290 2620 390" stroke="url(#trunkGrad)" stroke-width="20" fill="none" stroke-linecap="round" />
+  <path d="M 2830 420 Q 2700 450 2640 560" stroke="url(#trunkGrad)" stroke-width="18" fill="none" stroke-linecap="round" />
+
+  <!-- Tan la tung bop thanh tung tang dia thanh lich -->
+  <g fill="url(#leafGradNear)">
+    <ellipse cx="2830" cy="140" rx="115" ry="60" transform="rotate(15 2830 140)" />
+    <ellipse cx="2660" cy="170" rx="105" ry="55" transform="rotate(-10 2660 170)" />
+    <ellipse cx="2740" cy="260" rx="120" ry="65" transform="rotate(-5 2740 260)" />
+    <ellipse cx="2620" cy="380" rx="110" ry="60" transform="rotate(-15 2620 380)" />
+    <ellipse cx="2650" cy="550" rx="100" ry="52" transform="rotate(10 2650 550)" />
+  </g>
+</g>
+</svg>
+    </div>
+    <div class="parallax-layer layer-mist" id="layer-bg_07_mist_haze" data-layer="bg_07_mist_haze" data-alias="layer-mist" data-yaw="0.36" data-pitch="0.88" style="z-index: 7;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <linearGradient id="horizonMistGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--mist-color, #ffffff)" stop-opacity="0" />
+    <stop offset="45%" stop-color="var(--mist-color, #ffffff)" stop-opacity="0.18" />
+    <stop offset="80%" stop-color="var(--mist-color, #ffffff)" stop-opacity="0.36" />
+    <stop offset="100%" stop-color="var(--mist-color, #ffffff)" stop-opacity="0.48" />
+  </linearGradient>
+  <linearGradient id="godRayBeam" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#fff8e1" stop-opacity="var(--godray-opacity, 0.35)" />
+    <stop offset="100%" stop-color="#fff8e1" stop-opacity="0" />
+  </linearGradient>
+</defs>
+<g style="opacity: var(--mist-opacity, 0.4); transition: opacity 0.8s ease;">
+  <!-- Lop suong lam Hue mong mo tren duong chan troi -->
+  <rect x="0" y="580" width="3200" height="350" fill="url(#horizonMistGrad)" />
+
+  <!-- Cac vat sang xuyen qua may va tan cay (God rays) -->
+  <polygon points="650,0 820,0 1450,950 1150,950" fill="url(#godRayBeam)" />
+  <polygon points="1400,0 1560,0 2250,950 2000,950" fill="url(#godRayBeam)" opacity="0.8" />
+  <polygon points="2250,0 2380,0 2980,950 2800,950" fill="url(#godRayBeam)" opacity="0.6" />
+</g>
+</svg>
+    </div>
+    <div class="parallax-layer layer-lanterns" id="layer-bg_08_lanterns" data-layer="bg_08_lanterns" data-alias="layer-lanterns" data-yaw="0.58" data-pitch="0.7" style="z-index: 8;">
+      <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 1400" width="3200" height="1400">
+<defs>
+  <!-- Quầng sáng tỏa của đèn lồng -->
+  <radialGradient id="lanternAura" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#fff59d" stop-opacity="0.95" />
+    <stop offset="25%" stop-color="#ffb74d" stop-opacity="0.75" />
+    <stop offset="60%" stop-color="#ff7043" stop-opacity="0.35" />
+    <stop offset="100%" stop-color="#ff3d00" stop-opacity="0" />
+  </radialGradient>
+  <linearGradient id="silkLanternGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--lantern-core, #ffeb3b)" />
+    <stop offset="60%" stop-color="var(--lantern-body, #d9534f)" />
+    <stop offset="100%" stop-color="#801515" />
+  </linearGradient>
+</defs>
+
+<!-- Group den long cung dinh treo tren canh cay hai ben -->
+<g class="lanterns-container" style="transition: all 0.8s ease;">
+
+  <!-- DEN LỒNG 1: Treo canh cay ben trai (X=360, Y=260) -->
+  <g class="lantern-item">
+    <!-- Day treo thanh manh tu canh cay -->
+    <line x1="360" y1="210" x2="360" y2="280" stroke="#3e2618" stroke-width="2.5" />
+    <!-- Quầng sáng lớn ban đêm (chỉ hiển thị rực rỡ khi sang chế độ đêm) -->
+    <circle cx="360" cy="330" r="140" fill="url(#lanternAura)" 
+            style="opacity: var(--lantern-glow-opacity, 0); transition: opacity 0.8s ease;" />
+    <!-- Chao den go son thep vang -->
+    <polygon points="340,280 380,280 375,290 345,290" fill="#c49000" />
+    <!-- Than den long luc giac gam do thep hoa van -->
+    <path d="M 345 290 L 375 290 L 392 330 L 375 370 L 345 370 L 328 330 Z" fill="url(#silkLanternGrad)" stroke="#c49000" stroke-width="2.5" />
+    <!-- Nan doc theu hoa tiet long phuong -->
+    <line x1="360" y1="290" x2="360" y2="370" stroke="#ffd54f" stroke-width="1.8" opacity="0.8" />
+    <!-- Chao duoi va num go -->
+    <polygon points="348,370 372,370 366,378 354,378" fill="#c49000" />
+    <!-- Tua rua to vang thuot tha -->
+    <line x1="360" y1="378" x2="360" y2="425" stroke="#fbc02d" stroke-width="3.5" stroke-linecap="round" />
+  </g>
+
+  <!-- DEN LỒNG 2: Treo canh cay phu ben trai thap hon (X=520, Y=380) -->
+  <g class="lantern-item">
+    <line x1="520" y1="330" x2="520" y2="390" stroke="#3e2618" stroke-width="2.2" />
+    <circle cx="520" cy="435" r="120" fill="url(#lanternAura)" 
+            style="opacity: var(--lantern-glow-opacity, 0); transition: opacity 0.8s ease;" />
+    <polygon points="503,390 537,390 532,398 508,398" fill="#c49000" />
+    <path d="M 508 398 L 532 398 L 547 435 L 532 470 L 508 470 L 493 435 Z" fill="url(#silkLanternGrad)" stroke="#c49000" stroke-width="2.2" />
+    <line x1="520" y1="398" x2="520" y2="470" stroke="#ffd54f" stroke-width="1.5" opacity="0.8" />
+    <polygon points="510,470 530,470 525,477 515,477" fill="#c49000" />
+    <line x1="520" y1="477" x2="520" y2="515" stroke="#fbc02d" stroke-width="3" stroke-linecap="round" />
+  </g>
+
+  <!-- DEN LỒNG 3: Treo canh tung ben phai (X=2740, Y=260) -->
+  <g class="lantern-item">
+    <line x1="2740" y1="210" x2="2740" y2="280" stroke="#3e2618" stroke-width="2.5" />
+    <circle cx="2740" cy="330" r="140" fill="url(#lanternAura)" 
+            style="opacity: var(--lantern-glow-opacity, 0); transition: opacity 0.8s ease;" />
+    <polygon points="2720,280 2760,280 2755,290 2725,290" fill="#c49000" />
+    <path d="M 2725 290 L 2755 290 L 2772 330 L 2755 370 L 2725 370 L 2708 330 Z" fill="url(#silkLanternGrad)" stroke="#c49000" stroke-width="2.5" />
+    <line x1="2740" y1="290" x2="2740" y2="370" stroke="#ffd54f" stroke-width="1.8" opacity="0.8" />
+    <polygon points="2728,370 2752,370 2746,378 2734,378" fill="#c49000" />
+    <line x1="2740" y1="378" x2="2740" y2="425" stroke="#fbc02d" stroke-width="3.5" stroke-linecap="round" />
+  </g>
+
+  <!-- DEN LỒNG 4: Treo nhanh tung phu ben phai (X=2580, Y=370) -->
+  <g class="lantern-item">
+    <line x1="2580" y1="320" x2="2580" y2="380" stroke="#3e2618" stroke-width="2.2" />
+    <circle cx="2580" cy="425" r="120" fill="url(#lanternAura)" 
+            style="opacity: var(--lantern-glow-opacity, 0); transition: opacity 0.8s ease;" />
+    <polygon points="2563,380 2597,380 2592,388 2568,388" fill="#c49000" />
+    <path d="M 2568 388 L 2592 388 L 2607 425 L 2592 460 L 2568 460 L 2553 425 Z" fill="url(#silkLanternGrad)" stroke="#c49000" stroke-width="2.2" />
+    <line x1="2580" y1="388" x2="2580" y2="460" stroke="#ffd54f" stroke-width="1.5" opacity="0.8" />
+    <polygon points="2570,460 2590,460 2585,467 2575,467" fill="#c49000" />
+    <line x1="2580" y1="467" x2="2580" y2="505" stroke="#fbc02d" stroke-width="3" stroke-linecap="round" />
+  </g>
+</g>
+</svg>
+    </div>
+  </div>
+
+  <!-- 2. CANVAS THREE.JS TRONG SUOT -->
+  <div id="canvas-container"></div>
+
+  <!-- 3. GIAO DIEN DIEU KHIEN PHIA TREN -->
+  <div id="top-bar" class="panel">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <h1>Điện Thái Hòa & Sân Đại Triều</h1>
+      <span class="tag">Phiên Bản 21: Điện Thái Hòa 3D & Hậu Cảnh SVG Parallax</span>
+    </div>
+
+    <!-- Bo chuyen doi che do thoi gian: Ngay, Hoang Hon, Dem -->
+    <div id="time-bar">
+      <span style="font-size: 11px; color: #9bb0cc; margin-right: 2px;">Thời gian:</span>
+      <button class="time-btn active" id="btn-day" onclick="setTimeMode('day')">Ban Ngày</button>
+      <button class="time-btn" id="btn-sunset" onclick="setTimeMode('sunset')">Hoàng Hôn</button>
+      <button class="time-btn" id="btn-night" onclick="setTimeMode('night')">Ban Đêm (Đèn Lồng)</button>
+    </div>
+
+    <div id="stats-box">
+      <div>Đa giác: <span id="stat-triangles">--</span></div>
+      <div>Draw Calls: <span id="stat-calls">--</span></div>
+      <div>FPS: <span id="stat-fps">60</span></div>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button onclick="toggleTour()">Chế Độ Phim (30s Tour)</button>
+      <button onclick="capture4K()">Chụp 4K (3840x2160)</button>
+      <button onclick="toggleUI()">Ẩn Giao Diện</button>
+    </div>
+  </div>
+
+  <!-- 4. GIAO DIEN CHON GOC CAMERA PHIA DUOI -->
+  <div id="cam-bar" class="panel">
+    <button class="active" onclick="setCameraView('concept_front')">Góc 1: Chính Diện (Toàn Cảnh 44m)</button>
+    <button onclick="setCameraView('concept_angle')">Góc 2: Nhìn Chéo 3/4 (Nhà Kép Nối Mái)</button>
+    <button onclick="setCameraView('close_roof')">Góc 3: Mái Hoàng Lưu Ly & Bờ Nóc</button>
+    <button onclick="setCameraView('close_column')">Góc 4: Cột Lim Sơn Son Thếp Vàng C01-C80</button>
+    <button onclick="setCameraView('close_gutter')">Góc 5: Máng Thừa Lưu & Trần Vỏ Cua</button>
+    <button onclick="setCameraView('close_throne')">Góc 6: Ngai Vàng & Bửu Tán Cửu Long</button>
+    <button onclick="setCameraView('close_steps')">Góc 7: Thành Bậc Vát Trơn (Không Rồng)</button>
+    <button onclick="toggleReliability()" style="background: rgba(240, 200, 74, 0.2); border-color: #f0c84a;">Bảng Độ Tin Cậy</button>
+  </div>
+
+  <!-- Bang Do Tin Cay Kien Truc (Phien Ban 21) -->
+  <div id="reliability-panel" class="panel" style="display: none; top: 70px; left: 14px; max-width: 520px; max-height: 80vh; overflow-y: auto; font-size: 11px; line-height: 1.6; z-index: 100;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 6px;">
+      <h2 style="font-size: 13px; color: #f0c84a; text-transform: uppercase;">Bảng Độ Tin Cậy Kiến Trúc: Điện Thái Hòa</h2>
+      <button onclick="toggleReliability()" style="padding: 2px 8px; font-size: 10px;">Đóng</button>
+    </div>
+    <p style="font-style: italic; color: #e74c3c; margin-bottom: 8px; font-weight: bold;">
+      * Tái hiện nghệ thuật 3D kết hợp hậu cảnh SVG thị sai dựa trên tư liệu lịch sử.
+    </p>
+    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 4px; color: #f0c84a; width: 30%;">Kết cấu mái</td>
+        <td style="padding: 4px;">Trùng thiềm điệp ốc (nhà kép nối nóc bằng máng thừa lưu trần vỏ cua) <br><b style="color: #2ecc71;">[ĐÃ ĐỐI CHIẾU]</b> (Đại Nam nhất thống chí, HMCC 2024)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 4px; color: #f0c84a;">Lưới cột</td>
+        <td style="padding: 4px;">Đủ 80 cột gỗ lim sơn son thếp vàng (40 cột Tiền điện và 40 cột Chính điện) <br><b style="color: #2ecc71;">[ĐÃ ĐỐI CHIẾU]</b> (HMCC 2024, Báo Văn Hóa)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 4px; color: #f0c84a;">Bậc thềm và thành bậc</td>
+        <td style="padding: 4px;">3 lối lên trước, mỗi lối 5 bậc đá Thanh. <b style="color: #e67e22;">KHÔNG CÓ TƯỢNG RỒNG</b> ở thành bậc (thành bậc vát dốc phẳng trơn có chỉ soi nhẹ) <br><b style="color: #2ecc71;">[ĐÃ ĐỐI CHIẾU]</b> (Ảnh 1924, ảnh 2024, khai quật 6/2021)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 4px; color: #f0c84a;">Kích thước điện</td>
+        <td style="padding: 4px;">Rộng 44.0m, sâu 30.5m, cao bờ nóc 11.8m, đỉnh thái cực 12.4m <br><b style="color: #2ecc71;">[ĐÃ ĐỐI CHIẾU]</b> (Hồ sơ UNESCO 1993, HMCC 2021)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 4px; color: #f0c84a;">Cao độ nền</td>
+        <td style="padding: 4px;">+1.00m so với sân Đại Triều Nghi; +2.35m so với đất tự nhiên <br><b style="color: #3498db;">[MÂU THUẪN ĐÃ LÀM RÕ]</b></td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 4px; color: #f0c84a;">Hậu cảnh Parallax</td>
+        <td style="padding: 4px;">Hệ 8 lớp SVG thị sai (núi Ngự Bình, mây, rặng cây, tường xa, đèn lồng) <br><b style="color: #9b59b6;">[MINH HỌA NGHỆ THUẬT]</b></td>
+      </tr>
+    </table>
+  </div>
+
+  <script type="module">
+    import * as B02 from './wp/b02/module.js';
+    import * as G1 from './wp/g1/module.js';
+    import * as S1 from './wp/s1/module.js';
+    import * as S2 from './wp/s2/module.js';
+
+    let scene, camera, renderer, controls;
+    let isTouring = false;
+    let tourTime = 0;
+    let uiVisible = true;
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let dirLight = null;
+
+    // Danh sach 8 lop SVG Parallax
+    const parallaxLayers = [
+      { id: 'bg_01_sky', el: null, yawFactor: 0.02, pitchFactor: 0.08 },
+      { id: 'bg_02_clouds', el: null, yawFactor: 0.06, pitchFactor: 0.18 },
+      { id: 'bg_03_mountains', el: null, yawFactor: 0.14, pitchFactor: 1.00 },
+      { id: 'bg_04_forest', el: null, yawFactor: 0.22, pitchFactor: 0.95 },
+      { id: 'bg_05_distant_roofs', el: null, yawFactor: 0.32, pitchFactor: 0.90 },
+      { id: 'bg_06_near_trees', el: null, yawFactor: 0.52, pitchFactor: 0.75 },
+      { id: 'bg_07_mist_haze', el: null, yawFactor: 0.36, pitchFactor: 0.88 },
+      { id: 'bg_08_lanterns', el: null, yawFactor: 0.58, pitchFactor: 0.70 }
+    ];
+
+    const ctx = {
+      scene: null,
+      data: { get: (id) => ({ id: id, name: id }) },
+      terrain: { heightAt: (x, z) => 0.0 },
+      tier: 'Ultra',
+      onUpdateCallbacks: [],
+      onUpdate: function(cb) { this.onUpdateCallbacks.push(cb); },
+      publishFootprint: (id, pts) => {},
+      addCredit: (line) => {}
+    };
+
+    function initParallaxLayers() {
+      parallaxLayers.forEach(l => {
+        l.el = document.getElementById('layer-' + l.id);
+        // Gan them tham chieu dom element de tuong thich
+        l.element = l.el;
+      });
+    }
+
+    function updateParallax() {
+      if (!controls || !camera) return;
+      const yaw = controls.getAzimuthalAngle();
+      const polar = controls.getPolarAngle();
+      const pitch = polar - Math.PI / 2;
+
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      const fovYRad = (camera.fov * Math.PI) / 180;
+      const baseDy = (H / 2) * Math.tan(pitch) / Math.tan(fovYRad / 2);
+
+      for (let i = 0; i < parallaxLayers.length; i++) {
+        const lyr = parallaxLayers[i];
+        if (!lyr.el) continue;
+        const dx = yaw * lyr.yawFactor * W;
+        const dy = baseDy * lyr.pitchFactor;
+        lyr.el.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)`;
+      }
+    }
+
+    let currentTimeMode = 'day';
+    window.setTimeMode = function(mode) {
+      currentTimeMode = mode;
+      const container = document.getElementById('parallax-container');
+      if (container) {
+        container.className = 'theme-' + mode;
+      }
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-' + mode);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (mode === 'day') {
+        if (dirLight) {
+          dirLight.color.setHex(0xfff3e0);
+          dirLight.intensity = 2.2;
+        }
+        if (renderer) renderer.toneMappingExposure = 1.15;
+      } else if (mode === 'sunset') {
+        if (dirLight) {
+          dirLight.color.setHex(0xff8c00);
+          dirLight.intensity = 2.6;
+        }
+        if (renderer) renderer.toneMappingExposure = 1.05;
+      } else if (mode === 'night') {
+        if (dirLight) {
+          dirLight.color.setHex(0x3a4b68);
+          dirLight.intensity = 0.55;
+        }
+        if (renderer) renderer.toneMappingExposure = 0.85;
+      }
+    };
+
+    function init() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      ctx.scene = scene;
+
+      camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.2, 500);
+
+      // WebGL Renderer voi alpha: true de hien thi cac lop SVG phia sau
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance",
+        preserveDrawingBuffer: true
+      });
+      renderer.setClearColor(0x000000, 0.0);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      // Gioi han camera
+      controls.minDistance = 6.0;
+      controls.maxDistance = 85.0;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02; // khong chui xuong duoi dat
+      controls.minPolarAngle = Math.PI / 2 - 0.38; // gioi han ngua len
+      controls.minAzimuthAngle = -Math.PI / 3;     // -60 do
+      controls.maxAzimuthAngle = Math.PI / 3;      // +60 do
+
+      // Dang ky cac mo-dun 3D
+      S1.register(ctx);
+      S2.register(ctx);
+      G1.register(ctx);
+      B02.register(ctx);
+
+      // Tim anh sang mat troi de doi theo gio
+      scene.traverse(obj => {
+        if (obj.isDirectionalLight) dirLight = obj;
+      });
+
+      initParallaxLayers();
+
+      // Goc nhin mac dinh: Toan dien chinh dien khop 40-70% khung hinh
+      setCameraView('concept_front');
+
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'u' || e.key === 'U') toggleUI();
+        if (e.key === '1') setTimeMode('day');
+        if (e.key === '2') setTimeMode('sunset');
+        if (e.key === '3') setTimeMode('night');
+      });
+
+      window.__pilot = { scene, camera, renderer, controls, ctx, parallaxLayers };
+      window.__parallax = { setTimeMode: window.setTimeMode, updateParallax, layers: parallaxLayers };
+      calculateSceneStats();
+      animate();
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.setCameraView = function(viewKey) {
+      isTouring = false;
+      const buttons = document.querySelectorAll('#cam-bar button');
+      buttons.forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(buttons).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(viewKey));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (viewKey === 'concept_front') {
+        // Chinh dien toan canh tu san Dai Trieu: hop bao dien chiem khoang 52% chieu rong
+        camera.position.set(0, 3.2, 54.0);
+        controls.target.set(0, 5.0, 7.5);
+      } else if (viewKey === 'concept_angle') {
+        // Nhin cheo 3/4 tu phia dong nam san Dai Trieu
+        camera.position.set(36.0, 4.5, 52.0);
+        controls.target.set(0, 5.5, 0.0);
+      } else if (viewKey === 'close_roof') {
+        // Can canh mai hoang luu ly va bo noc
+        camera.position.set(5.0, 13.0, 13.0);
+        controls.target.set(0.0, 11.8, 7.5);
+      } else if (viewKey === 'close_column') {
+        // Can canh hang cot lim son son thep vang C01-C80
+        camera.position.set(3.5, 2.8, 16.5);
+        controls.target.set(2.7, 3.0, 13.5);
+      } else if (viewKey === 'close_gutter') {
+        // Can canh mang thua luu noi hai nha va tran vom vo cua (3m)
+        camera.position.set(8.0, 6.2, 4.0);
+        controls.target.set(4.0, 5.4, 0.0);
+      } else if (viewKey === 'close_throne') {
+        // Can canh ngai vang tam cap va buu tan cuu long (3m)
+        camera.position.set(0.0, 2.4, -2.2);
+        controls.target.set(0.0, 2.0, -5.5);
+      } else if (viewKey === 'close_steps') {
+        // Can canh thanh bac da Thanh vat tron tron (khong co rong!)
+        camera.position.set(3.2, 1.4, 18.5);
+        controls.target.set(2.0, 0.6, 16.0);
+      }
+      controls.update();
+    };
+
+    window.toggleTour = function() {
+      isTouring = !isTouring;
+      tourTime = 0;
+    };
+
+    window.toggleUI = function() {
+      uiVisible = !uiVisible;
+      document.getElementById('top-bar').style.opacity = uiVisible ? '1' : '0';
+      document.getElementById('cam-bar').style.opacity = uiVisible ? '1' : '0';
+      document.getElementById('top-bar').style.pointerEvents = uiVisible ? 'auto' : 'none';
+      document.getElementById('cam-bar').style.pointerEvents = uiVisible ? 'auto' : 'none';
+    };
+
+    window.toggleReliability = function() {
+      const p = document.getElementById('reliability-panel');
+      p.style.display = (p.style.display === 'none') ? 'block' : 'none';
+    };
+
+    window.capture4K = function() {
+      const origWidth = window.innerWidth;
+      const origHeight = window.innerHeight;
+      const renderW = 3840;
+      const renderH = 2160;
+
+      renderer.setSize(renderW, renderH, false);
+      camera.aspect = renderW / renderH;
+      camera.updateProjectionMatrix();
+
+      renderer.render(scene, camera);
+      const dataUrl = renderer.domElement.toDataURL('image/jpeg', 0.95);
+
+      const link = document.createElement('a');
+      link.download = `thai_hoa_4k_${Date.now()}.jpg`;
+      link.href = dataUrl;
+      link.click();
+
+      renderer.setSize(origWidth, origHeight);
+      camera.aspect = origWidth / origHeight;
+      camera.updateProjectionMatrix();
+    };
+
+    function calculateSceneStats() {
+      renderer.render(scene, camera);
+      const info = renderer.info;
+      const triEl = document.getElementById('stat-triangles');
+      if (triEl && info.render) triEl.innerText = info.render.triangles.toLocaleString();
+      const callEl = document.getElementById('stat-calls');
+      if (callEl && info.render) callEl.innerText = info.render.calls;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const now = performance.now();
+      const dt = (now - lastTime) / 1000.0;
+      frameCount++;
+      if (now - lastTime >= 1000) {
+        const fpsEl = document.getElementById('stat-fps');
+        if (fpsEl) fpsEl.innerText = frameCount;
+        frameCount = 0;
+        lastTime = now;
+      }
+
+      if (isTouring) {
+        tourTime += 0.0035;
+        const radius = 52.0;
+        const angle = Math.sin(tourTime) * 0.45;
+        camera.position.x = Math.sin(angle) * radius;
+        camera.position.z = Math.cos(angle) * radius;
+        camera.position.y = 3.2 + Math.sin(tourTime * 2) * 1.0;
+        controls.target.set(0, 5.0, 7.5);
+      }
+
+      controls.update();
+      updateParallax();
+      ctx.onUpdateCallbacks.forEach(cb => cb(dt, camera, 17.5));
+      renderer.render(scene, camera);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
