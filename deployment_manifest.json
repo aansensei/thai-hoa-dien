@@ -5,12 +5,12 @@
       "sha256": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f"
     },
     "pilot_thai_hoa.html": {
-      "bytes": 47940,
-      "sha256": "3210674728995a00c13ef4a3a83391fcecf4f522d4f5a1f6a0ad6950b182353e"
+      "bytes": 48366,
+      "sha256": "ed3c26874c64aa433980a817a3721366163aeee4058f3b5244b3d41f887b88b2"
     },
     "lib/painterly_pass.js": {
       "bytes": 2380,
-      "sha256": "aa4e1c1c2baf33404c3fe3fd323600b15e1cc6427bafc3d5454477da8f26ed64"
+      "sha256": "86d95e91042b6323e979da9a5d8012cb4a745dbdec9d2fb13b69805700394674"
     },
     "bg/depth_backdrop.js": {
       "bytes": 5516,
@@ -89,8 +89,8 @@
       "sha256": "90ef6c39125b76bac732d79f720b6adbd4cdf892afb1bbcc8f47ece972cf5904"
     },
     "wp/b02/fantasy.js": {
-      "bytes": 10370,
-      "sha256": "b5d775dcd81ebbe81bdf1164c7723b338b7f47a4f2017928a0bdc50bb3ed17d5"
+      "bytes": 11633,
+      "sha256": "cea059f8cf1742d2d8a26b9bbc622456a210e29f7b76ab3ba5dccedf9a4e1cb9"
     },
     "wp/b02/roof.js": {
       "bytes": 10531,

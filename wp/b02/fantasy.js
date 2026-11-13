@@ -54,6 +54,12 @@ export function createFantasyDetails(building) {
   const group = new THREE.Group();
   group.name = 'b02_fantasy_details';
   group.userData.interpretation = 'chi tiết trang trí sáng tạo theo yêu cầu AanSensei, không xác nhận nguyên trạng lịch sử';
+  const bodyScale = 1.12;
+  const platformHeight = 1.7;
+  const bodyOffset = platformHeight - bodyScale;
+  const bodyTransform = new THREE.Matrix4().makeScale(1, bodyScale, 1);
+  bodyTransform.setPosition(0, bodyOffset, 0);
+  const stairTransform = new THREE.Matrix4().makeScale(1, platformHeight, 1);
   const materials = {
     wood: new THREE.MeshStandardMaterial({color: 0x632426, roughness: 0.65}),
     recess: new THREE.MeshStandardMaterial({color: 0x301d21, roughness: 0.86}),
@@ -78,6 +84,7 @@ export function createFantasyDetails(building) {
       const diameter = source.geometry.parameters.radiusTop / radius;
       const height = prefix === 'column_' ? source.geometry.parameters.height : 1;
       matrix.compose(source.position, source.quaternion, new THREE.Vector3(diameter, height, diameter));
+      matrix.premultiply(bodyTransform);
       instances.setMatrixAt(index, matrix);
       source.visible = false;
     }
@@ -92,7 +99,10 @@ export function createFantasyDetails(building) {
     mesh.rotation.set(...rotation);
     parent.add(mesh);
     mesh.updateWorldMatrix(true, false);
-    let copy = geometry.clone().applyMatrix4(mesh.matrixWorld);
+    let branch = parent;
+    while (branch.parent && branch.parent !== group) branch = branch.parent;
+    const displayTransform = branch.userData.stairDecoration ? stairTransform : bodyTransform;
+    let copy = geometry.clone().applyMatrix4(mesh.matrixWorld).applyMatrix4(displayTransform);
     if (copy.index) {
       const expanded = copy.toNonIndexed();
       copy.dispose();
@@ -152,6 +162,7 @@ export function createFantasyDetails(building) {
   // rồng thành bậc là điêu khắc fantasy, không phải bằng chứng di tích
   for (const x of [-10.85, -8.15, -2.08, 2.08, 8.15, 10.85]) {
     const dragon = new THREE.Group();
+    dragon.userData.stairDecoration = true;
     dragon.position.set(x, 0, 0);
     group.add(dragon);
     const body = [[0, 1.25, 15.3], [0, 1.32, 15.7], [0, 1.03, 16.18], [0, 0.74, 16.65], [0, 0.66, 17.14], [0, 0.92, 17.48]];
@@ -187,6 +198,23 @@ export function createFantasyDetails(building) {
   }
   group.userData.doorLeaves = doorLeaves;
   group.userData.dragonCount = 6;
+  group.userData.platformHeightM = platformHeight;
+  group.userData.bodyHeightScale = bodyScale;
+  for (const child of building.children) {
+    if (child.name === 'b02_platform_group') {
+      for (const mesh of child.children) {
+        if (mesh.geometry.parameters.height === 0.75) mesh.position.y += platformHeight - 1;
+        else {
+          mesh.scale.y *= platformHeight;
+          mesh.position.y *= platformHeight;
+        }
+      }
+    } else if (child.name === 'b02_stairs_group') child.scale.y = platformHeight;
+    else {
+      child.scale.y *= bodyScale;
+      child.position.y = child.position.y * bodyScale + bodyOffset;
+    }
+  }
   building.add(group);
   return group;
 }

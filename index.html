@@ -864,6 +864,17 @@
       G1.register(ctx);
       B02.register(ctx);
 
+      const colorMaterials = new Set();
+      scene.traverse(object => {
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        for (const material of materials) {
+          if (material && material.color && !colorMaterials.has(material)) {
+            material.color.convertSRGBToLinear();
+            colorMaterials.add(material);
+          }
+        }
+      });
+
       // Tim anh sang mat troi de doi theo gio
       scene.traverse(obj => {
         if (obj.isDirectionalLight) dirLight = obj;
@@ -905,14 +916,14 @@
       if (viewKey === 'concept_front') {
         // Chinh dien toan canh tu san Dai Trieu: hop bao dien chiem khoang 52% chieu rong
         camera.position.set(0, 3.2, 54.0);
-        controls.target.set(0, 5.0, 7.5);
+        controls.target.set(0, 6.4, 7.5);
       } else if (viewKey === 'concept_angle') {
         // Nhin cheo 3/4 tu phia dong nam san Dai Trieu
         camera.position.set(36.0, 4.5, 52.0);
-        controls.target.set(0, 5.5, 0.0);
+        controls.target.set(0, 6.4, 0.0);
       } else if (viewKey === 'close_doors') {
-        camera.position.set(7.0, 3.0, 24.0);
-        controls.target.set(0, 3.1, 13.3);
+        camera.position.set(7.0, 4.0, 25.0);
+        controls.target.set(0, 4.1, 13.3);
       } else if (viewKey === 'close_roof') {
         // Can canh mai hoang luu ly va bo noc
         camera.position.set(5.0, 13.0, 13.0);
